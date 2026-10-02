@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Hanapin ang Lokasyon ng Pilipinas</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef6f9;
+  color: #18323d;
+}
+
+.activity {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin-bottom: 8px;
+  color: #176b87;
+}
+
+.header p {
+  margin: 0;
+}
+
+.instructions {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border: 1px solid #d5e5ea;
+}
+
+.game-area {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.labels {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #d5e5ea;
+}
+
+.labels h3 {
+  margin-top: 0;
+  font-size: 17px;
+}
+
+.label {
+  padding: 12px;
+  margin: 9px 0;
+  background: #f5c84c;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  cursor: grab;
+  user-select: none;
+}
+
+.label:active {
+  cursor: grabbing;
+}
+
+.label.selected {
+  outline: 3px solid #176b87;
+}
+
+.map {
+  position: relative;
+  min-height: 500px;
+  background: #dff3fa;
+  border: 3px solid #8bbdcc;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+/* Ocean */
+.ocean-label {
+  position: absolute;
+  font-size: 14px;
+  font-style: italic;
+  color: #39788c;
+}
+
+/* Simple schematic islands */
+.island {
+  position: absolute;
+  background: #7dbb72;
+  border: 2px solid #477b46;
+  border-radius: 50%;
+}
+
+.luzon {
+  width: 70px;
+  height: 130px;
+  left: 48%;
+  top: 28%;
+  transform: rotate(20deg);
+}
+
+.visayas {
+  width: 75px;
+  height: 45px;
+  left: 48%;
+  top: 53%;
+  transform: rotate(-8deg);
+}
+
+.mindanao {
+  width: 105px;
+  height: 70px;
+  left: 44%;
+  top: 68%;
+  transform: rotate(10deg);
+}
+
+/* Drop zones */
+.dropzone {
+  position: absolute;
+  width: 125px;
+  min-height: 55px;
+  padding: 8px;
+  border: 2px dashed #39788c;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.75);
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.dropzone.correct {
+  background: #d9f4d5;
+  border-color: #4d9449;
+}
+
+.dropzone.wrong {
+  background: #ffe0e0;
+  border-color: #b94b4b;
+}
+
+/* Positions */
+.north {
+  top: 7%;
+  left: 43%;
+}
+
+.west {
+  top: 45%;
+  left: 5%;
+}
+
+.east {
+  top: 43%;
+  right: 5%;
+}
+
+.south {
+  bottom: 5%;
+  left: 42%;
+}
+
+.country-ph {
+  top: 42%;
+  left: 44%;
+  width: 145px;
+  min-height: 65px;
+  background: rgba(255,255,255,0.35);
+  border-color: #477b46;
+}
+
+/* Controls */
+.controls {
+  text-align: center;
+  margin-top: 18px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.check {
+  background: #176b87;
+  color: white;
+}
+
+.reset {
+  background: #d9e3e7;
+  color: #18323d;
+}
+
+.result {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 12px;
+  min-height: 28px;
+}
+
+.hint {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 10px;
+  color: #52717c;
+}
+
+@media (max-width: 700px) {
+  .game-area {
+    grid-template-columns: 1fr;
+  }
+
+  .map {
+    min-height: 430px;
+  }
+
+  .label {
+    display: inline-block;
+    margin: 5px;
+  }
+
+  .labels {
+    text-align: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="activity">
+
+  <div class="header">
+    <h1>🗺️ Hanapin ang Lokasyon!</h1>
+    <p><strong>Araling Panlipunan</strong></p>
+  </div>
+
+  <div class="instructions">
+    <strong>Panuto:</strong>
+    I-drag ang bawat label papunta sa tamang bahagi ng mapa.
+    Maaari ring <strong>i-click ang label</strong> at pagkatapos ay
+    i-click ang tamang kahon kung hindi gumagana ang drag-and-drop.
+  </div>
+
+  <div class="game-area">
+
+    <div class="labels">
+
+      <h3>📌 Mga Label</h3>
+
+      <div class="label"
+           draggable="true"
+           data-answer="north">
+        Taiwan
+      </div>
+
+      <div class="label"
+           draggable="true"
+           data-answer="west">
+        Vietnam
+      </div>
+
+      <div class="label"
+           draggable="true"
+           data-answer="east">
+        Pacific Ocean
+      </div>
+
+      <div class="label"
+           draggable="true"
+           data-answer="south">
+        Indonesia
+      </div>
+
+      <div class="label"
+           draggable="true"
+           data-answer="country-ph">
+        Pilipinas
+      </div>
+
+    </div>
+
+    <div class="map">
+
+      <div class="ocean-label" style="top:2%; left:5%;">
+        Hilaga
+      </div>
+
+      <div class="ocean-label" style="bottom:2%; right:5%;">
+        Timog
+      </div>
+
+      <!-- Schematic Philippine Islands -->
+      <div class="island luzon"></div>
+      <div class="island visayas"></div>
+      <div class="island mindanao"></div>
+
+      <!-- Drop Zones -->
+
+      <div class="dropzone north"
+           data-zone="north">
+        Hilaga
+      </div>
+
+      <div class="dropzone west"
+           data-zone="west">
+        Kanluran
+      </div>
+
+      <div class="dropzone east"
+           data-zone="east">
+        Silangan
+      </div>
+
+      <div class="dropzone south"
+           data-zone="south">
+        Timog
+      </div>
+
+      <div class="dropzone country-ph"
+           data-zone="country-ph">
+        🇵🇭<br>
+        Pilipinas
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="hint">
+    💡 Tip: Hanapin muna ang direksyon bago ilagay ang label.
+  </div>
+
+  <div class="controls">
+    <button class="check" id="checkBtn">
+      ✓ Suriin ang Sagot
+    </button>
+
+    <button class="reset" id="resetBtn">
+      ↻ Ulitin
+    </button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+</div>
+
+<script>
+
+const labels = document.querySelectorAll(".label");
+const zones = document.querySelectorAll(".dropzone");
+const result = document.getElementById("result");
+
+let selectedLabel = null;
+
+/* DRAG FUNCTION */
+
+labels.forEach(label => {
+
+  label.addEventListener("dragstart", function(e) {
+    e.dataTransfer.setData("text/plain", label.dataset.answer);
+  });
+
+  /* CLICK FALLBACK */
+
+  label.addEventListener("click", function() {
+
+    labels.forEach(l => l.classList.remove("selected"));
+
+    selectedLabel = label;
+
+    label.classList.add("selected");
+
+  });
+
+});
+
+/* DROP FUNCTION */
+
+zones.forEach(zone => {
+
+  zone.addEventListener("dragover", function(e) {
+    e.preventDefault();
+  });
+
+  zone.addEventListener("drop", function(e) {
+
+    e.preventDefault();
+
+    const answer = e.dataTransfer.getData("text/plain");
+
+    const label = document.querySelector(
+      '.label[data-answer="' + answer + '"]'
+    );
+
+    if (label) {
+
+      zone.appendChild(label);
+
+      label.classList.remove("selected");
+
+    }
+
+  });
+
+  /* CLICK FALLBACK */
+
+  zone.addEventListener("click", function() {
+
+    if (selectedLabel) {
+
+      zone.appendChild(selectedLabel);
+
+      selectedLabel.classList.remove("selected");
+
+      selectedLabel = null;
+
+    }
+
+  });
+
+});
+
+/* CHECK ANSWERS */
+
+document.getElementById("checkBtn").addEventListener("click", function() {
+
+  let score = 0;
+
+  zones.forEach(zone => {
+
+    zone.classList.remove("correct", "wrong");
+
+    const label = zone.querySelector(".label");
+
+    if (label) {
+
+      if (label.dataset.answer === zone.dataset.zone) {
+
+        zone.classList.add("correct");
+
+        score++;
+
+      } else {
+
+        zone.classList.add("wrong");
+
+      }
+
+    }
+
+  });
+
+  result.textContent =
+    "⭐ Iskor: " + score + " / 5";
+
+  if (score === 5) {
+
+    result.textContent =
+      "🎉 Napakahusay! Kumpleto at tama ang iyong sagot! 5 / 5";
+
+  }
+
+});
+
+/* RESET */
+
+document.getElementById("resetBtn").addEventListener("click", function() {
+
+  const labelContainer = document.querySelector(".labels");
+
+  labels.forEach(label => {
+
+    labelContainer.appendChild(label);
+
+    label.classList.remove("selected");
+
+  });
+
+  zones.forEach(zone => {
+
+    zone.classList.remove("correct", "wrong");
+
+  });
+
+  selectedLabel = null;
+
+  result.textContent = "";
+
+});
+
+</script>
+
+</body>
+</html>
